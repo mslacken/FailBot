@@ -11,15 +11,15 @@ pattern=".*"
 
 usage() {
   cat <<EOF
-Usage: $0 [-p <pattern>] [-m <model>]
+Usage: $0 [-p <pattern>] [-m <models>]
   -p, --pattern  : Filter failed packages by a pattern (default: "$pattern")
-  -m, --model    : Specify the model to use (default: "$MODEL")
+  -m, --models   : Specify the model to use (default: "$MODEL"), can be a comma seperated list
   -h, --help     : Display this help message
 EOF
 }
 
 # Parse command line options
-OPTS=$(getopt -o p:m:h --long pattern:,model:,help -n 'explain-failed.sh' -- "$@")
+OPTS=$(getopt -o p:m:h --long pattern:,models:,help -n 'explain-failed.sh' -- "$@")
 if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
 
 eval set -- "$OPTS"
@@ -30,7 +30,7 @@ while true; do
       pattern="$2"
       shift 2
       ;;
-    -m | --model )
+    -m | --models )
       MODEL="$2"
       shift 2
       ;;
@@ -48,23 +48,18 @@ while true; do
   esac
 done
 
-# # connect our mcp-server
-# test -e ~/.mcphost.yml || cat <<EOF
-# mcpServers:
-#   osc-mcp:
-#     type: "remote"
-#     url: "http://localhost:8666"
-# EOF
-
 
 failedPackages=`osc prjresults $PROJECT -s F -b -r standard | awk '/'$pattern'/ {print $1}' `
 
+IFS=',' read -ra MODELS <<< "$MODEL"
 
 for pkg in $failedPackages; do 
-	echo "Checking package: $pkg"
-	logfile=${pkg}_${MODEL}_${id}.md
-	starttime=`date +%s`
-	$MCPHOST -m $MODEL --compact --stream=false script explain-mcphost --args:PKG $pkg --args:PROJECT $PROJECT --args:REPO $REPO --args:ALLOWED `pwd` --args:OUT ${logfile}
-	endtime=`date +%s`
-	test -e ${logfile} && echo -e "\nRun for $(( $endtime - $starttime )) s" >> ${logfile}
+	for model in "${MODELS[@]}"; do
+		echo "Checking package: $pkg with model $model"
+		logfile=${pkg}_${model//:/_}_${id}.md
+		starttime=`date +%s`
+		$MCPHOST -m "$model" --compact --stream=false script explain-mcphost --args:PKG $pkg --args:PROJECT $PROJECT --args:REPO $REPO --args:ALLOWED `pwd` --args:OUT ${logfile}
+		endtime=`date +%s`
+		test -e ${logfile} && echo -e "\nRun for $(( $endtime - $starttime )) s" >> ${logfile}
+	done
 done
