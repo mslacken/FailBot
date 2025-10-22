@@ -3,12 +3,10 @@ mcpServers:
   osc-mcp:
     type: "remote"
     url: "http://localhost:8666"
-  fs:
-    name: "fs"
-    type: "local"
-    command: ["/suse/cgoll/programming/github/openSUSE/osc-mcp/write-report","--file","${OUT}.md","--overwrite"]
 ---
-Check the source package or bundle ${PKG} for the project ${PROJECT} and the repository ${REPO} remotely.
+Check the source package or bundle ${PKG} for the project ${PROJECT} and the repository ${REPO} remotely. 
 The project for openSUSE_Tumbleweed is openSUSE:Factory with default as repository.
-Check also the build log and explain why it failed. For missing files or components try to search for the missing package but only report them if they are missing in BuildRequires of the spec file.
-Analyze the build failure and write a short report.
+Check the build log for the ${PKG} and for the project ${PROJECT} and the repository ${REPO} remotely.
+For missing files or components try to search for the missing package and check name.
+Only report them if they are missing as BuildRequires the spec file and are found for the path openSUSE:Tumbleweed in the standard path.
+Analyze the build failure summarize it to a short report.
