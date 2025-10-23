@@ -5,7 +5,7 @@ PROJECT=openSUSE:Factory
 MODEL="ollama:qwen3:0.6b"
 MCPHOST=~/programming/github/mcphost/mcphost
 
-func create_mcp_conf() {
+create_mcp_conf() {
   mkdir -p .mcphost
 cat <<EOF
 hooks:
@@ -68,7 +68,7 @@ while true; do
   esac
 done
 
-test -d .mcphost || 
+test -d .mcphost || create_mcp_conf
 
 
 if [ x"$package" == "x" ] ; then
